@@ -25,6 +25,6 @@ jobs:
       - name: Build
         run: dotnet build -c Release --no-restore
       - name: Create the package
-        run: dotnet pack --configuration Release <my project>
+        run: dotnet pack -c Release WsjtxClient
       - name: Publish the package to GPR
         run: dotnet nuget push WsjtxClient/bin/Release/*.nupkg
