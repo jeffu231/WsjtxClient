@@ -1,0 +1,30 @@
+name: dotnet package
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+        
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core SDK 
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0.x'
+          source-url: https://nuget.pkg.github.com/jeffu231/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Display dotnet version
+        run: dotnet --version
+      - name: Install Dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build -c Release --no-restore
+      - name: Create the package
+        run: dotnet pack --configuration Release <my project>
+      - name: Publish the package to GPR
+        run: dotnet nuget push WsjtxClient/bin/Release/*.nupkg
