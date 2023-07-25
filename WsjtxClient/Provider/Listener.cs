@@ -1,10 +1,10 @@
 namespace WsjtxClient.Provider;
 
-public class ListenerConfig
+public class Listener
 {
-    public string Ip { get; set; }
+    public string Ip { get; set; } = "127.0.0.1";
 
-    public int Port { get; set; }
+    public int Port { get; set; } = 2237;
 
-    public bool Multicast { get; set; }
+    public bool Multicast { get; set; } = false;
 }

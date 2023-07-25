@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using WsjtxClient.Events;
@@ -15,20 +16,34 @@ namespace WsjtxClient.Provider
         private readonly ILogger<WsjtxDataProvider> _logger;
         private readonly ConcurrentDictionary<string, WsjtxStatus> _wsjtxStatus;
         private readonly Dictionary<string, DateTime> _activeInstances;
+        private readonly Listener _config;
 
         private IWsjtxClient _wsjtxClient;
 
-        public WsjtxDataProvider(ILogger<WsjtxDataProvider> logger, IWsjtxClient wsjtxClient)
+        public WsjtxDataProvider(ILogger<WsjtxDataProvider> logger, IWsjtxClient wsjtxClient, Listener config)
         {
             _logger = logger;
             _wsjtxClient = wsjtxClient;
             _activeInstances = new Dictionary<string, DateTime>();
             _wsjtxStatus = new ConcurrentDictionary<string, WsjtxStatus>();
+            _config = config;
+        }
+        
+        public WsjtxDataProvider(ILogger<WsjtxDataProvider> logger, IWsjtxClient wsjtxClient, IConfiguration configuration):
+            this(logger, wsjtxClient, new Listener
+            {
+                Ip = configuration["Wsjtx:Listener:Ip"] ?? "127.0.0.1",
+                Port = configuration.GetValue<int>("Wsjtx:Listener:Port"),
+                Multicast = configuration.GetValue<bool>("Wsjtx:Listener:Multicast")
+            })
+        {
+             
         }
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _wsjtxClient.MessageReceived += WsjtxClientOnMessageReceived;
+            _wsjtxClient.Start(_config, stoppingToken);
             while (!stoppingToken.IsCancellationRequested)
             {
                 var now = DateTime.Now;
@@ -44,6 +59,15 @@ namespace WsjtxClient.Provider
                 await Task.Delay(30000, stoppingToken);
             }
             
+        }
+
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("WsjtxDataProvider service stopping");
+            _wsjtxClient.Stop();
+            var t = base.StopAsync(cancellationToken);
+            _logger.LogInformation("WsjtxDataProvider service stopped");
+            return t;
         }
 
         private void WsjtxClientOnMessageReceived(object? sender, WsjtxMessage msg)

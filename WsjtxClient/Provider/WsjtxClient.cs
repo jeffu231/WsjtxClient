@@ -14,50 +14,76 @@ namespace WsjtxClient.Provider
     /// </summary>
     public sealed class WsjtxClient : IWsjtxClient, IDisposable
     {
-        private readonly UdpClient _udpClient;
+        private UdpClient? _udpClient;
         private readonly ConcurrentDictionary<string, IPEndPoint> _endPoints;
         private readonly ILogger<WsjtxClient> _logger;
-
-        public WsjtxClient(ILogger<WsjtxClient> logger, IConfiguration configuration)
+        private bool _running = false;
+        private CancellationTokenSource _token;
+        private IPAddress? _ipAddress;
+        private bool _isMulticast = false;
+        
+        public WsjtxClient(ILogger<WsjtxClient> logger)
         {
             _logger = logger;
             _endPoints = new ConcurrentDictionary<string, IPEndPoint>();
+        }
+
+        public void Start(Listener configuration, CancellationToken token)
+        {
+            _token = CancellationTokenSource.CreateLinkedTokenSource(token);
+            
             try
             {
-                var ipAddress = IPAddress.Parse(configuration["Wsjtx:Listener:Ip"]??"224.0.0.1");
-                var port = configuration.GetValue<int>("Wsjtx:Listener:Port");
-                var multicast = configuration.GetValue<bool>("Wsjtx:Listener:Multicast");
-                if (multicast)
+                _ipAddress = IPAddress.Parse(configuration.Ip);
+                var port = configuration.Port;
+                _isMulticast = configuration.Multicast;
+                if (_isMulticast)
                 {
                     _udpClient = new UdpClient();
                     _udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                     _udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, port));
-                    _udpClient.JoinMulticastGroup(ipAddress);
+                    _udpClient.JoinMulticastGroup(_ipAddress);
                 }
                 else
                 {
-                    _udpClient = new UdpClient(new IPEndPoint(ipAddress, port));
+                    _udpClient = new UdpClient(new IPEndPoint(_ipAddress, port));
                 }
+                
+                _udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, 2000);
             }
             catch (Exception e)
             {
                 _logger.LogCritical("Invalid IP Address {Message}", e.Message);
                 throw;
             }
+
+            _ = Task.Run(UdpLoop, token);
+        }
+
+        public void Stop()
+        {
+            _running = false;
+            if (_isMulticast && _ipAddress != null)
+            {
+                _udpClient.DropMulticastGroup(_ipAddress);
+            }
             
-            _ = Task.Run(UdpLoop);
+            _token.Cancel();
+            _udpClient?.Close();
+            _logger.LogInformation("Wsjtx Client stopped");
         }
         
-        private void UdpLoop()
+        private async Task UdpLoop()
         {
-            var from = new IPEndPoint(IPAddress.Any, 0);
-
-            while (true)
+            if (_udpClient == null) throw new Exception("UdpClient is null!");
+            
+            _running = true;
+            while (_running)
             {
-                byte[] datagram = _udpClient.Receive(ref from);
-
                 try
                 {
+                    UdpReceiveResult result = await _udpClient.ReceiveAsync(_token.Token);
+                    byte[] datagram = result.Buffer;
                     var msg = WsjtxMessage.Parse(datagram);
                     if (msg is CloseMessage cm)
                     {
@@ -65,22 +91,29 @@ namespace WsjtxClient.Provider
                     }
                     else
                     {
-                        _endPoints[msg.Id] = from;
+                        _endPoints[msg.Id] = result.RemoteEndPoint;
                     }
-                    
+
                     OnMessageReceived(msg);
-                    
-                    _logger.LogTrace("Message for {MsgId} received from {From}", msg.Id, from);
+
+                    _logger.LogTrace("Message for {MsgId} received from {From}", 
+                        msg.Id, result.RemoteEndPoint);
                 }
                 catch (ParseFailureException ex)
                 {
-                    _logger.LogError("Parse failure for {ExMessageType}: {ExMessage}", ex.MessageType, ex.Message);
+                    _logger.LogError("Parse failure for {ExMessageType}: {ExMessage}", 
+                        ex.MessageType, ex.Message);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Exception on client receive");
                 }
             }
         }
 
         public async Task<bool> SendMessage(IWsjtxCommandMessage msg)
         {
+            if (_udpClient == null) return false;
             if (_endPoints.TryGetValue(msg.Id, out var endPoint))
             {
                 var bytesToSend = msg.GetBytes();
@@ -101,7 +134,7 @@ namespace WsjtxClient.Provider
         
         public void Dispose()
         {
-            _udpClient.Dispose();
+            _udpClient?.Dispose();
         }
 
         public event EventHandler<WsjtxMessage>? MessageReceived;
