@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using WsjtxClient.Messages;
 using WsjtxClient.Messages.Both;
@@ -26,6 +25,7 @@ namespace WsjtxClient.Provider
         {
             _logger = logger;
             _endPoints = new ConcurrentDictionary<string, IPEndPoint>();
+            _token = new CancellationTokenSource();
         }
 
         public void Start(Listener configuration, CancellationToken token)
@@ -65,7 +65,7 @@ namespace WsjtxClient.Provider
             _running = false;
             if (_isMulticast && _ipAddress != null)
             {
-                _udpClient.DropMulticastGroup(_ipAddress);
+                _udpClient?.DropMulticastGroup(_ipAddress);
             }
             
             _token.Cancel();
@@ -85,24 +85,32 @@ namespace WsjtxClient.Provider
                     UdpReceiveResult result = await _udpClient.ReceiveAsync(_token.Token);
                     byte[] datagram = result.Buffer;
                     var msg = WsjtxMessage.Parse(datagram);
+                    if (msg == null)
+                    {
+                        _logger.LogWarning("Received null message");
+                        continue;
+                    }
                     if (msg is CloseMessage cm)
                     {
                         _endPoints.TryRemove(msg.Id, out _);
                     }
-                    else
+                    else 
                     {
                         _endPoints[msg.Id] = result.RemoteEndPoint;
                     }
 
                     OnMessageReceived(msg);
 
-                    _logger.LogTrace("Message for {MsgId} received from {From}", 
+                    _logger.LogTrace("Message for {MsgId} received from {From}",
                         msg.Id, result.RemoteEndPoint);
                 }
                 catch (ParseFailureException ex)
                 {
-                    _logger.LogError("Parse failure for {ExMessageType}: {ExMessage}", 
-                        ex.MessageType, ex.Message);
+                    _logger.LogError(ex,"Parse failure for {ExMessageType}", ex.MessageType);
+                }
+                catch (OperationCanceledException oc)
+                {
+                    _logger.LogTrace(oc, "Udp receive cancelled");
                 }
                 catch (Exception e)
                 {
