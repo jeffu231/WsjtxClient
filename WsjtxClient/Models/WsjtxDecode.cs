@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using WsjtxClient.Messages.Out;
 
 namespace WsjtxClient.Models
@@ -54,13 +55,15 @@ namespace WsjtxClient.Models
         {
             get
             {
-                if (Exchange.Contains('-') ||
-                    Exchange.Contains("73") ||
-                    Exchange.Contains("RRR", StringComparison.InvariantCultureIgnoreCase))
+                if(!Regex.IsMatch(Exchange, "^[A-Ra-r]{2}[0-9]{2}([A-Xa-x]{2}|$)\\z"))
                 {
                     return false;
                 }
-
+                if (Exchange.Contains("RR73"))
+                {
+                    return false;
+                }
+                
                 return true;
             }
         }
