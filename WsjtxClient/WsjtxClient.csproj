@@ -7,7 +7,7 @@
         <RootNamespace>WsjtxClient</RootNamespace>
         <Description>.NET library for unpacking WSJT-X UDP datagrams</Description>
         <Version>1.1.2</Version>
-        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
         <PackageDescription>Library to communicate with WSJTX over UDP</PackageDescription>
         <RepositoryUrl>https://github.com/jeffu231/WsjtxClient</RepositoryUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
