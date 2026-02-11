@@ -37,7 +37,7 @@ namespace WsjtxClient.Messages.Both
          *    schema 2 is the highest schema number supported if the Heartbeat
          *    message does not contain the "Maximum schema number" field.
          */
-        public static new WsjtxMessage Parse(byte[] message)
+        public new static WsjtxMessage? Parse(byte[] message)
         {
             if (!CheckMagicNumber(message))
             {
@@ -65,10 +65,9 @@ namespace WsjtxClient.Messages.Both
         }
 
         public int SchemaVersion { get; set; }
-        //public string Id { get; set; }
         public uint MaxSchemaNumber { get; set; }
-        public string Version { get; set; }
-        public string Revision { get; set; }
+        public string Version { get; set; } = string.Empty;
+        public string Revision { get; set; } = string.Empty;
 
         public override string ToString() => $"Heartbeat id:{Id} maxSchemaNumber:{MaxSchemaNumber} schema {SchemaVersion} version:{Version} revision:{Revision}";
 

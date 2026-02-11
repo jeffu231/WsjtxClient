@@ -87,6 +87,16 @@ namespace WsjtxClient.Provider
                 _logger.LogTrace("Heartbeat for {Id}", hm.Id);
                 ParseHeartbeatMessage(hm);
             }
+            else if (msg is QsoLoggedMessage qsoLoggedMessage)
+            {
+                _logger.LogTrace("Qso Logged for {Id}", qsoLoggedMessage.Id);
+                OnQsoLoggedReceived(qsoLoggedMessage);
+            }
+            else if (msg is LoggedAdifMessage loggedAdifMessage)
+            {
+                _logger.LogTrace("Adif Logged for {Id}", loggedAdifMessage.Id);
+                OnAdifLoggedReceived(loggedAdifMessage);
+            }
         }
 
         private void ParseStatusMessage(StatusMessage msg)
@@ -141,10 +151,24 @@ namespace WsjtxClient.Provider
         {
             return await _wsjtxClient.SendMessage(msg);
         }
+        
+        public event EventHandler<WsjtxQsoLoggedEventArgs>? QsoLogReceived;
+        
+        public event EventHandler<WsjtxLoggedAdifEventArgs>? LoggedAdifReceived;
 
         public event EventHandler<WsjtxDecodeEventArgs>? DecodeReceived;
         
         public event EventHandler<WsjtxStatusEventArgs>? StatusReceived;
+        
+        private void OnAdifLoggedReceived(LoggedAdifMessage msg)
+        {
+            LoggedAdifReceived?.Invoke(this,new WsjtxLoggedAdifEventArgs(msg));
+        }
+        
+        private void OnQsoLoggedReceived(QsoLoggedMessage msg)
+        {
+            QsoLogReceived?.Invoke(this,new WsjtxQsoLoggedEventArgs(msg));
+        }
 
         private void OnDecodeReceived(WsjtxDecode decode)
         {

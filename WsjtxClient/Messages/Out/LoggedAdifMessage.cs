@@ -24,14 +24,13 @@
 
     public class LoggedAdifMessage : WsjtxMessage
     {
-        //public string Id { get; private set; }
         public int SchemaVersion { get; private set; }
         /// <summary>
         /// A complete ADIF file with one record after the header.
         /// </summary>
-        public string AdifText { get; set; }
+        public string AdifText { get; private set; } = string.Empty;
 
-        public static new WsjtxMessage Parse(byte[] message)
+        public new static WsjtxMessage Parse(byte[] message)
         {
             if (!CheckMagicNumber(message))
             {

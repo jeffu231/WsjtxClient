@@ -7,8 +7,8 @@ namespace WsjtxClient.Messages;
 public abstract class WsjtxMessage:IWsjtxMessage
 {
     protected const int MAGIC_NUMBER_LENGTH = 4;
-        
-    public static WsjtxMessage? Parse(byte[] datagram)
+    
+    public static WsjtxMessage? Parse(byte[] datagram) 
     {
         if (!CheckMagicNumber(datagram))
         {
@@ -24,47 +24,24 @@ public abstract class WsjtxMessage:IWsjtxMessage
         {
             if (schemaVersion == 3 || schemaVersion == 2)
             {
-                WsjtxMessage result;
+                WsjtxMessage result = messageType switch
+                {
+                    MessageType.HEARTBEAT_MESSAGE_TYPE => HeartbeatMessage.Parse(datagram),
+                    MessageType.STATUS_MESSAGE_TYPE => StatusMessage.Parse(datagram),
+                    MessageType.DECODE_MESSAGE_TYPE => DecodeMessage.Parse(datagram),
+                    MessageType.CLEAR_MESSAGE_TYPE => ClearMessage.Parse(datagram),
+                    MessageType.QSO_LOGGED_MESSAGE_TYPE => QsoLoggedMessage.Parse(datagram),
+                    MessageType.CLOSE_MESSAGE_TYPE => CloseMessage.Parse(datagram),
+                    MessageType.WSPR_DECODE_MESSAGE_TYPE => WsprDecodeMessage.Parse(datagram),
+                    MessageType.LOGGED_ADIF_MESSAGE_TYPE => LoggedAdifMessage.Parse(datagram),
+                    _ => new UnknownMessage()
+                };
 
-                if (messageType == MessageType.HEARTBEAT_MESSAGE_TYPE)
+                if (result != null)
                 {
-                    result = HeartbeatMessage.Parse(datagram);
+                    result.Datagram = datagram;
+                    return result;
                 }
-                else if (messageType == MessageType.STATUS_MESSAGE_TYPE)
-                {
-                    result = StatusMessage.Parse(datagram);
-                }
-                else if (messageType == MessageType.DECODE_MESSAGE_TYPE)
-                {
-                    result = DecodeMessage.Parse(datagram);
-                }
-                else if (messageType == MessageType.CLEAR_MESSAGE_TYPE)
-                {
-                    result = ClearMessage.Parse(datagram);
-                }
-                else if (messageType == MessageType.QSO_LOGGED_MESSAGE_TYPE)
-                {
-                    result = QsoLoggedMessage.Parse(datagram);
-                }
-                else if (messageType == MessageType.CLOSE_MESSAGE_TYPE)
-                {
-                    result = CloseMessage.Parse(datagram);
-                }
-                else if (messageType == MessageType.WSPR_DECODE_MESSAGE_TYPE)
-                {
-                    result = WsprDecodeMessage.Parse(datagram);
-                }
-                else if (messageType == MessageType.LOGGED_ADIF_MESSAGE_TYPE)
-                {
-                    result = LoggedAdifMessage.Parse(datagram);
-                }
-                else
-                {
-                    result = new UnknownMessage();
-                }
-
-                result.Datagram = datagram;
-                return result;
             }
         }
         catch (Exception ex)
@@ -106,6 +83,10 @@ public abstract class WsjtxMessage:IWsjtxMessage
         }
 
         string output = o.ToString();
+        if (output == null)
+        {
+            output = string.Empty;
+        }
 
         if (output.Length > chars)
         {

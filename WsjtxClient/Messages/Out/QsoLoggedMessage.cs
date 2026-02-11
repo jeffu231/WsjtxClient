@@ -28,25 +28,24 @@
     public class QsoLoggedMessage : WsjtxMessage
     {
         public int SchemaVersion { get; private set; }
-        //public string Id { get; private set; }
         public DateTime DateTimeOff { get; private set; }
-        public string DxCall { get; private set; }
-        public string DxGrid { get; private set; }
+        public string DxCall { get; private set; }  = string.Empty;
+        public string DxGrid { get; private set; }  = string.Empty;
         public ulong TxFrequency { get; private set; }
-        public string Mode { get; private set; }
-        public string ReportSent { get; private set; }
-        public string ReportReceived { get; private set; }
-        public string TxPower { get; private set; }
-        public string Comments { get; private set; }
-        public string Name { get; private set; }
+        public string Mode { get; private set; }  = string.Empty;
+        public string ReportSent { get; private set; }  = string.Empty;
+        public string ReportReceived { get; private set; }  = string.Empty;
+        public string TxPower { get; private set; }  = string.Empty;
+        public string Comments { get; private set; }  = string.Empty;
+        public string Name { get; private set; }  = string.Empty;
         public DateTime DateTimeOn { get; private set; }
-        public string OperatorCall { get; private set; }
-        public string MyCall { get; private set; }
-        public string MyGrid { get; private set; }
-        public string ExchangeSent { get; private set; }
-        public string ExchangeReceived { get; private set; }
+        public string OperatorCall { get; private set; }  = string.Empty;
+        public string MyCall { get; private set; }  = string.Empty;
+        public string MyGrid { get; private set; }  = string.Empty;
+        public string ExchangeSent { get; private set; }  = string.Empty;
+        public string ExchangeReceived { get; private set; }  = string.Empty;
 
-        public static new WsjtxMessage Parse(byte[] message)
+        public new static WsjtxMessage? Parse(byte[] message)
         {
             if (!CheckMagicNumber(message))
             {
