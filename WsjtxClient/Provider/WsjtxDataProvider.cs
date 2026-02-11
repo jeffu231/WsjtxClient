@@ -137,23 +137,45 @@ namespace WsjtxClient.Provider
         
         public List<string> Instances => _wsjtxStatus.Keys.ToList();
 
+        /// <summary>
+        /// Gets the most recent status information for the WSJT-X instance the provider is aware of
+        /// with the id name specified.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public WsjtxStatus? Status(string id)
         {
-            if (_wsjtxStatus.TryGetValue(id, out var status))
-            {
-                return status;
-            }
-
-            return null;
+            return _wsjtxStatus.GetValueOrDefault(id);
         }
 
+        /// <summary>
+        /// The IP that this provider is listening on
+        /// </summary>
+        public string ListenerIp => _config.Ip;
+
+        /// <summary>
+        /// The port this provider is listening on
+        /// </summary>
+        public int ListenerPort => _config.Port;
+
+        /// <summary>
+        /// Send a broadcast WSJT-X message to the clients listening on this providers <see cref="ListenerIp"/> and <see cref="ListenerPort"/>
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
         public async Task<bool> SendMessage(IWsjtxCommandMessage msg)
         {
             return await _wsjtxClient.SendMessage(msg);
         }
         
+        /// <summary>
+        /// Event handler for QSO Logged Messages
+        /// </summary>
         public event EventHandler<WsjtxQsoLoggedEventArgs>? QsoLogReceived;
         
+        /// <summary>
+        /// Event handler for Logged Adif Messages
+        /// </summary>
         public event EventHandler<WsjtxLoggedAdifEventArgs>? LoggedAdifReceived;
 
         public event EventHandler<WsjtxDecodeEventArgs>? DecodeReceived;
