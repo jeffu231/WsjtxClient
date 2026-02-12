@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.1.6"></a>
+## [1.1.6](https://www.github.com/jeffu231/WsjtxClient/releases/tag/v1.1.6) (2026-02-12)
+
+### Bug Fixes
+
+* remove noisey log info message for heart beat ([1043ee8](https://www.github.com/jeffu231/WsjtxClient/commit/1043ee8ebc4619b50e6f3acd14174db1ebcf3b28))
+
 <a name="1.1.5"></a>
 ## [1.1.5](https://www.github.com/jeffu231/WsjtxClient/releases/tag/v1.1.5) (2026-02-12)
 

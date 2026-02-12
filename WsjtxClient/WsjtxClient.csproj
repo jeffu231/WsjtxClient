@@ -5,7 +5,7 @@
         <Nullable>annotations</Nullable>
         <RootNamespace>WsjtxClient</RootNamespace>
         <Description>.NET library to communicate with WSJTX over UDP</Description>
-        <Version>1.1.5</Version>
+        <Version>1.1.6</Version>
         <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
         <PackageDescription>.NET library to communicate with WSJTX over UDP</PackageDescription>
         <RepositoryUrl>https://github.com/jeffu231/WsjtxClient</RepositoryUrl>
