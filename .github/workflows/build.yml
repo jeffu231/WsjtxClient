@@ -1,6 +1,6 @@
 name: dotnet package
 
-on: [push]
+on:
   # trigger manual
   workflow_dispatch:
   push:
