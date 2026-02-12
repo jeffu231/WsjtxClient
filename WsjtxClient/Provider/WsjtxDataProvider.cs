@@ -122,7 +122,6 @@ namespace WsjtxClient.Provider
 
         private void ParseHeartbeatMessage(HeartbeatMessage msg)
         {
-            _logger.LogInformation("{Beat}", msg.ToString() );
             if (_activeInstances.ContainsKey(msg.Id))
             {
                 _activeInstances[msg.Id] = DateTime.Now;
