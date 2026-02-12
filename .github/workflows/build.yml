@@ -1,4 +1,4 @@
-name: dotnet package
+name: Build and Publish Library to GitHub Package Registry
 
 on:
   # trigger manual
