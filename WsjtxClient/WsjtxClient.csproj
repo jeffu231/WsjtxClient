@@ -5,21 +5,21 @@
         <Nullable>annotations</Nullable>
         <LangVersion>11</LangVersion>
         <RootNamespace>WsjtxClient</RootNamespace>
-        <Description>.NET library for unpacking WSJT-X UDP datagrams</Description>
+        <Description>.NET library to communicate with WSJTX over UDP</Description>
         <Version>1.1.3</Version>
-        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-        <PackageDescription>Library to communicate with WSJTX over UDP</PackageDescription>
+        <TargetFramework>net8.0</TargetFramework>
+        <PackageDescription>.NET library to communicate with WSJTX over UDP</PackageDescription>
         <RepositoryUrl>https://github.com/jeffu231/WsjtxClient</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <ProductVersion>1.1.2</ProductVersion>
-        <AssemblyVersion>1.1.2</AssemblyVersion>
         <AssemblyName>WsjtxClient</AssemblyName>
         <PackageId>WsjtxClient</PackageId>
+        <Authors>Jeff Uchitjil</Authors>
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
